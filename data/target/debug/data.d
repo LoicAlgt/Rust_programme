@@ -1,0 +1,1 @@
+C:\Users\loica\Desktop\MasterProjet\PageHTML\data\target\debug\data.exe: C:\Users\loica\Desktop\MasterProjet\PageHTML\data\src\main.rs C:\Users\loica\Desktop\MasterProjet\PageHTML\data\templates\index.html C:\Users\loica\Desktop\MasterProjet\PageHTML\data\templates\show.html
