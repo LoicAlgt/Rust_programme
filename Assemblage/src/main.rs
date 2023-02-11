@@ -59,6 +59,7 @@ async fn default_handler(req_method: Method) -> Result<impl Responder> {
 async fn showthis(form_data: web::Form<FormData>) -> Result<NamedFile> { //fonction pour afficher le 2éme rendu html
     let html = Show{ thing_to_show: form_data.thing_to_show.to_string(),thing_to_show2: form_data.thing_to_show2.to_string(),thing_to_show3: form_data.thing_to_show3.to_string()}.render().unwrap();
     println!("{}",html);
+    let b = test2();
     let path: PathBuf = "templates/menushowthis.html".parse().unwrap();
     Ok(NamedFile::open(path)?)
 }
@@ -71,6 +72,68 @@ async fn menu1(req: HttpRequest) -> Result<HttpResponse> {
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type(ContentType::plaintext())
         .body(include_str!("../templates/menu1.html")))
+}
+
+const INDEX_HTML: &str = r#"
+<html>
+    <head>
+        <title>Username B!frost</title>
+        <script src="/templates/lottie-player.js" type="text/javascript"></script>
+        <link rel="stylesheet" type="text/css" href="/templates/SignUp.css" />
+    </head>
+    <body class="body">     
+    <div class="login-page">
+      <div class="form">
+      <div class="titre">
+      <h1 align="center">SIGNUP BIFROST</h1>
+  </div>
+        <form action="/showthis2" method="post">
+      <lottie-player
+      src="https://assets4.lottiefiles.com/datafiles/XRVoUu3IX4sGWtiC3MPpFnJvZNq7lVWDCa8LSqgS/profile.json"
+      background="transparent"
+      speed="1"
+      style="justify-content: center"
+      loop
+      autoplay
+    ></lottie-player>
+          <input name="thing" id="username" placeholder="&#xf007;  username" />
+          <input type="submit" value="Show">
+      </form>
+      </div>
+    </div>
+  </body>
+</html>
+"#;
+
+const SHOW_HTML: &str = r#"
+<html>
+    <head>
+        <title>Username B!frost</title>
+    </head>
+    <body>
+        <h1>Showing thing:</h1>
+        <button onclick="window.location.href='http://127.0.0.1:8080/index'">ok</button>
+    </body>
+</html>
+"#;
+
+
+
+#[derive(Deserialize)]
+struct FormData2 {
+    thing: String,
+}
+
+async fn index2() -> Result<HttpResponse, MyError> {
+    Ok(HttpResponse::Ok().content_type("text/html").body(INDEX_HTML))
+}
+
+async fn showthis2(form_data: web::Form<FormData2>) -> Result<HttpResponse, MyError> {
+    let html = SHOW_HTML
+        .replace("{{thing_to_show}}", &form_data.thing);
+        println!("{}",form_data.thing);
+        let b = test1();
+    Ok(HttpResponse::Ok().content_type("text/html").body(html))
 }
 
 async fn index(data: web::Data<String>) -> HttpResponse {
@@ -111,7 +174,6 @@ async fn index(data: web::Data<String>) -> HttpResponse {
               loop
               autoplay
             ></lottie-player>
-            <input id="login" type="text" placeholder="&#xf007; Login" />
             <input id="password" type="password"  placeholder="&#xf023; Password" />          </form>
 			
 		<a><input id="signup" type="submit" value="SIGN UP"  style="display: none;" ><a>
@@ -123,6 +185,14 @@ async fn index(data: web::Data<String>) -> HttpResponse {
     </html>
 "#, data.get_ref());
     HttpResponse::Ok().content_type("text/html").body(html)
+}
+
+fn test1(){
+    println!("test1")
+}
+
+fn test2(){
+    println!("test2")
 }
 
 #[actix_web::main]
@@ -144,9 +214,11 @@ async fn main() -> io::Result<()> {
             // default
         .default_service(web::to(default_handler))
         .route("/showthis", web::post().to(showthis))
-        .data("Salt".to_owned()).route("/", web::get().to(index))
+        .data("Salt".to_owned()).route("/index", web::get().to(index))
+        .route("/index2", web::get().to(index2))
+        .route("/showthis2", web::post().to(showthis2))
     })
-    .bind(("127.0.0.1", 1010))?
+    .bind(("127.0.0.1", 8080))?
     .workers(2)
     .run()
     .await
