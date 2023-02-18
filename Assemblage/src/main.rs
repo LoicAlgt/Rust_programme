@@ -11,6 +11,8 @@ use actix_web::{
     },
     web, App, Either, HttpRequest, HttpResponse, HttpServer, Responder, Result,ResponseError
 };
+use actix_web::web::ServiceConfig;
+
 
 
 #[derive(Debug)] // Macro qui implémente l'erreur
@@ -59,7 +61,6 @@ async fn default_handler(req_method: Method) -> Result<impl Responder> {
 async fn showthis(form_data: web::Form<FormData>) -> Result<NamedFile> { //fonction pour afficher le 2éme rendu html
     let html = Show{ thing_to_show: form_data.thing_to_show.to_string(),thing_to_show2: form_data.thing_to_show2.to_string(),thing_to_show3: form_data.thing_to_show3.to_string()}.render().unwrap();
     println!("{}",html);
-    let b = test2();
     let path: PathBuf = "templates/menushowthis.html".parse().unwrap();
     Ok(NamedFile::open(path)?)
 }
@@ -74,126 +75,94 @@ async fn menu1(req: HttpRequest) -> Result<HttpResponse> {
         .body(include_str!("../templates/menu1.html")))
 }
 
-const INDEX_HTML: &str = r#"
-<html>
-    <head>
-        <title>Username B!frost</title>
-        <script src="/templates/lottie-player.js" type="text/javascript"></script>
-        <link rel="stylesheet" type="text/css" href="/templates/SignUp.css" />
-    </head>
-    <body class="body">     
-    <div class="login-page">
-      <div class="form">
-      <div class="titre">
-      <h1 align="center">SIGNUP BIFROST</h1>
-  </div>
-        <form action="/showthis2" method="post">
-      <lottie-player
-      src="https://assets4.lottiefiles.com/datafiles/XRVoUu3IX4sGWtiC3MPpFnJvZNq7lVWDCa8LSqgS/profile.json"
-      background="transparent"
-      speed="1"
-      style="justify-content: center"
-      loop
-      autoplay
-    ></lottie-player>
-          <input name="thing" id="username" placeholder="&#xf007;  username" />
-          <input type="submit" value="Show">
-      </form>
-      </div>
-    </div>
-  </body>
-</html>
-"#;
+//Connexion
+fn html() -> String {
+    let html = r#"
+        <html>
+            <body>
+                <form action="/submit" method="post">
+                    <input type="text" name="username">
+                    <input type="text" name="password">
+                    <input type="submit" value="Submit">
+                </form>
+            </body>
+        </html>
+    "#;
 
-const SHOW_HTML: &str = r#"
-<html>
-    <head>
-        <title>Username B!frost</title>
-    </head>
-    <body>
-        <h1>Showing thing:</h1>
-        <button onclick="window.location.href='http://127.0.0.1:8080/index'">ok</button>
-    </body>
-</html>
-"#;
-
-
-
-#[derive(Deserialize)]
-struct FormData2 {
-    thing: String,
+    html.to_owned()
 }
 
-async fn index2() -> Result<HttpResponse, MyError> {
-    Ok(HttpResponse::Ok().content_type("text/html").body(INDEX_HTML))
-}
-
-async fn showthis2(form_data: web::Form<FormData2>) -> Result<HttpResponse, MyError> {
-    let html = SHOW_HTML
-        .replace("{{thing_to_show}}", &form_data.thing);
-        println!("{}",form_data.thing);
-        let b = test1();
-    Ok(HttpResponse::Ok().content_type("text/html").body(html))
-}
 
 async fn index(data: web::Data<String>) -> HttpResponse {
     let html = format!(r#"
     <html>
-        <body>
-            <script src="/templates/sha256.js" type="text/javascript"></script>
-            <link rel="stylesheet" type="text/css" href="/templates/SignUp.css" />
-            <script src="/templates/lottie-player.js" type="text/javascript"></script>
+        <head>
             <script>
                 var rust_variable = '{}';
-                document.getElementById('rust_variable_value').innerHTML = rust_variable; 
-                console.log(rust_variable)
-                
-            function Securisation() {{
-                let str;
-                str = document.getElementById("password").value;
-                console.log(str.length);
-                console.log(str);
-                let mdphash = str+rust_variable;
-                console.log (mdphash)
-                let hash = sha256(mdphash)
-		        console.log(hash);
-            }}                  
             </script>
-            <body class="body">     
-      <div class="login-page">
-        <div class="form">
-		<div class="titre">
-		<h1 align="center">SIGNUP BIFROST</h1>
-	</div>
-          <form>
-            <lottie-player
-              src="https://assets4.lottiefiles.com/datafiles/XRVoUu3IX4sGWtiC3MPpFnJvZNq7lVWDCa8LSqgS/profile.json"
-              background="transparent"
-              speed="1"
-              style="justify-content: center"
-              loop
-              autoplay
-            ></lottie-player>
-            <input id="password" type="password"  placeholder="&#xf023; Password" />          </form>
-			
-		<a><input id="signup" type="submit" value="SIGN UP"  style="display: none;" ><a>
-          <a><input id="test" type="button" onclick="Securisation()"value="Verification du mot de passe"><a>
-          <button onclick="window.location.href='templates/menu1.html'">ok</button>
-        </div>
-      </div>
+        </head>
+        <body>
+            <h1>Rust variable in JavaScript</h1>
+            <p>Value of the rust_variable is: <span id='rust_variable_value'></span></p>
+            <script>
+                document.getElementById('rust_variable_value').innerHTML = rust_variable;                   
+            </script>
+            <button onclick="window.location.href='http://127.0.0.1:8080/index3'">ok</button>
         </body>
     </html>
 "#, data.get_ref());
     HttpResponse::Ok().content_type("text/html").body(html)
 }
 
-fn test1(){
-    println!("test1")
+async fn index3() -> impl Responder {
+    let html_content = html();
+    HttpResponse::Ok().body(html_content)
 }
 
-fn test2(){
-    println!("test2")
+async fn submit_form(form: web::Form<MyForm>) -> impl Responder {
+    let username = &form.username;
+    let password = &form.password;
+    println!("{}", username);
+    println!("{}", password);
+    HttpResponse::Found().header("LOCATION", "/templates/menu1.html").finish()
 }
+
+fn static_files_config(config: &mut ServiceConfig) {
+    config.service(
+        Files::new("/templates", "./templates")
+            .index_file("menu1.html")
+    );
+}
+
+
+#[derive(Debug, Deserialize)]
+struct MyForm {
+    username: String,
+    password: String,
+}
+
+async fn index2() -> HttpResponse {
+    HttpResponse::Ok().content_type("text/html").body(r#"
+        <html>
+            <head>
+                <title>Page d'accueil</title>
+            </head>
+            <body>
+                <h1>Bienvenue !</h1>
+                <input type="text" id="username" placeholder="&#xf007;  username"/>
+                <button onclick="window.location.href='http://127.0.0.1:8080/index'">ok</button>
+            </body>
+        </html>
+    "#)
+}
+
+
+//Fonction salt 
+fn salt() -> String {
+    let salt = "bonjour".to_owned();
+    salt
+}
+
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {
@@ -214,9 +183,11 @@ async fn main() -> io::Result<()> {
             // default
         .default_service(web::to(default_handler))
         .route("/showthis", web::post().to(showthis))
-        .data("Salt".to_owned()).route("/index", web::get().to(index))
-        .route("/index2", web::get().to(index2))
-        .route("/showthis2", web::post().to(showthis2))
+        .data(salt()).route("/index", web::get().to(index))
+        .configure(static_files_config)
+        .route("/index3", web::get().to(index3))
+        .route("/submit", web::post().to(submit_form))
+        .route("/", web::get().to(index2))
     })
     .bind(("127.0.0.1", 8080))?
     .workers(2)
