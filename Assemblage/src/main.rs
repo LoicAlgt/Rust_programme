@@ -166,8 +166,15 @@ async fn showthis2(form_data: web::Form<FormData2>) -> Result<HttpResponse, MyEr
 //Fonction salt 
 fn salt() -> String {
     let salt = "bonjour".to_owned();
+    unsafe {
+        if let Some(thing) = &THING_TO_SHOW {
+            println!("{}", thing);
+            return salt;
+        }
+    }
     salt
 }
+
 
 
 //page3
