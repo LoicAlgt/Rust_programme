@@ -151,6 +151,10 @@ async fn index3() -> impl Responder {
 
 static mut THING_TO_SHOW: Option<String> = None;
 
+struct user {
+    nom: String,
+}
+
 async fn showthis2(form_data: web::Form<FormData2>) -> Result<HttpResponse, MyError> {
     let html = SHOW_HTML
         .replace("{{thing_to_show}}", &form_data.thing);
@@ -160,6 +164,7 @@ async fn showthis2(form_data: web::Form<FormData2>) -> Result<HttpResponse, MyEr
         unsafe {
             THING_TO_SHOW = Some(form_data.thing.clone()); // stockage de form_data.thing dans la variable globale THING_TO_SHOW
         }
+        let nom = user { nom : String ::from(form_data.thing.to_string())};
     Ok(HttpResponse::Ok().content_type("text/html").body(html))
 }
 
@@ -169,6 +174,7 @@ fn salt() -> String {
     unsafe {
         if let Some(thing) = &THING_TO_SHOW {
             println!("{}", thing);
+            //fonction toto
             return salt;
         }
     }
@@ -210,7 +216,6 @@ fn html() -> String {
                 }}
             }}
 
-       
 
         </script>
         <style>
