@@ -149,11 +149,13 @@ async fn index3() -> impl Responder {
     HttpResponse::Ok().body(html_content)
 }
 
-static mut THING_TO_SHOW: Option<String> = None;
+
 
 struct user {
     nom: String,
 }
+
+static mut THING_TO_SHOW: Option<String> = None;
 
 async fn showthis2(form_data: web::Form<FormData2>) -> Result<HttpResponse, MyError> {
     let html = SHOW_HTML
@@ -190,7 +192,7 @@ fn html() -> String {
         <html>
         <head>
         <meta charset="UTF-8">
-        <title>Conexion B!frost</title>
+        <title>Conexion B!frost tu es beau</title>
         <script src="/templates/lottie-player.js" type="text/javascript"></script>
         <link rel="stylesheet" type="text/css" href="/templates/page1.css" />
         </head>
@@ -298,7 +300,7 @@ async fn main() -> io::Result<()> {
         .route("/index2", web::get().to(index2))
         .route("/showthis2", web::post().to(showthis2))
         .route("/index3", web::get().to(index3))
-        .route("/submit", web::post().to(submit_form))
+        .route("/submit", web::post().to(submit_form))      
     })
     .bind(("127.0.0.1", 8080))?
     .workers(2)

@@ -47,9 +47,19 @@
 	var str = document.getElementById("password").value;
 	console.log(str.length);
 	console.log(str);
+	const login = document.getElementById("login").value;
+	//white liste a complèter
+	const forbiddenWords = ["select", "update", "delete"];
+	const character = ";";
 	if (document.getElementById('login').value == ""){
 		alert("Veuillez rentrer votre nom d'utilisateur");
 	}
+	else if (forbiddenWords.includes(login.toLowerCase())){
+		alert("Impossible d'utiliser ce login");
+    }
+	else if (login.indexOf(character) !== -1){
+		alert("Impossible de mettre un point virgule dans le login");
+    }
 	else if (document.getElementById('password').value == ""){
 		alert("Veuillez rentrer un mot de passe");
     }
